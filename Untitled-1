@@ -1,0 +1,52 @@
+
+## Instalación
+
+1. Subir archivos al directorio de WordPress
+2. Los archivos crearán automáticamente las tablas necesarias
+3. Acceder a `/yoga-admin` para el panel de administración
+4. Usar el shortcode `[yoga_reservas]` en cualquier página para mostrar las reservas públicas
+
+## Funcionalidades
+
+### Sistema Público de Reservas
+- Ver clases disponibles por día/semana
+- Filtros por horario (mañana, tarde, noche)
+- Reservar clases con formulario
+- Cancelar reservas con email
+- Confirmaciones por correo automáticas
+
+### Panel de Administración
+- Dashboard con estadísticas
+- Crear clases individuales o recurrentes
+- Gestionar reservas existentes
+- Configuración de emails y estudio
+- Ver ocupación de clases en tiempo real
+
+## Tecnologías
+
+- PHP 7.4+
+- WordPress 5.0+
+- MySQL/MariaDB
+- JavaScript vanilla
+- CSS3 con Flexbox/Grid
+
+## Configuración
+
+### Base de Datos
+Las tablas se crean automáticamente:
+- `wp_yoga_classes` - Almacena las clases
+- `wp_yoga_reservations` - Almacena las reservas
+
+### Emails
+Configurar en el panel de administración:
+- Email de envío
+- Nombre del remitente
+- Notificaciones automáticas
+
+## Soporte
+
+Para soporte técnico o modificaciones, contactar al desarrollador del sistema.
+
+## Licencia
+
+Sistema desarrollado específicamente para Kurunta Yoga by Ana Sordo.
