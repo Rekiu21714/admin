@@ -989,6 +989,7 @@ function yoga_reservas_shortcode() {
     display: block !important;
     opacity: 1 !important;
     visibility: visible !important;
+    transform: scale(1) !important;
 }
 
 /* ASEGURAR QUE LOS BOTONES DEL MODAL FUNCIONEN */
@@ -1468,7 +1469,7 @@ function yoga_reservas_shortcode() {
     padding: 30px 25px;
     border-radius: 16px;
     margin: 25px 0;
-    border: 2px solid rgba(148, 164, 132, 0.25);
+    border: 2px solid rgba(148, 164, 132, 0.2);
     position: relative;
 }
 
@@ -1685,7 +1686,7 @@ function yoga_reservas_shortcode() {
     padding: 25px;
     border-radius: 16px;
     margin: 25px 0;
-    border: 2px solid rgba(148, 164, 132, 0.25);
+    border: 2px solid rgba(148, 164, 132, 0.2);
     backdrop-filter: blur(10px);
 }
 
@@ -1895,7 +1896,8 @@ function yoga_reservas_shortcode() {
     }
 }
 
-/* ========== MODAL DE CANCELACIÓN ========== */
+/* ========== FIN CSS HÍBRIDO ========== */
+		/* ========== MODAL DE CANCELACIÓN ========== */
 #cancelModal {
     display: none !important;
 }
@@ -2021,65 +2023,54 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     window.yogaBookingPublicInitialized = true;
 
-    console.log("🧘‍♀️ Sistema Público Kurunta Yoga v4 - INICIADO");
+    console.log("🧘‍♀️ Sistema Público Kurunta Yoga v3 - INICIADO");
 
     let currentWeekStart = new Date();
     let selectedDate = new Date();
     let currentFilter = "all";
 
+    // ========== FUNCIONES AUXILIARES (PRIMERO) ==========
+    function formatTime(timeString) {
+        const time = new Date('2000-01-01 ' + timeString);
+        return time.toLocaleTimeString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
+    }
+
+    function filterClasses(classes) {
+        console.log("🎯 FILTRO EJECUTADO con:", currentFilter);
+        if (currentFilter === "all") return classes;
+        
+        return classes.filter(function(classItem) {
+            const hour = parseInt(classItem.time.split(":")[0]);
+            switch (currentFilter) {
+                case "morning":   return hour >= 6  && hour < 12;
+                case "afternoon": return hour >= 12 && hour < 18;
+                case "evening":   return hour >= 18 && hour <= 23;
+                default:          return true;
+            }
+        });
+    }
+
+    function getStatusClass(classItem) {
+        if (classItem.available_spots <= 0) return "full";
+        if (classItem.available_spots <= 3) return "almost-full";
+        return "available";
+    }
+
+    function getStatusText(classItem) {
+        if (classItem.available_spots <= 0) return "Completo";
+        return classItem.available_spots + "/" + classItem.max_spots + " disponibles";
+    }
+
     // ========== FUNCIONES PRINCIPALES ==========
     function init() {
         setCurrentWeek();
-        generateHeader();
-        generateTimeFilters();
         generateDayNumbers();
         loadClassesFromDB();
         setupEventListeners();
-    }
-
-    function generateHeader() {
-        const headerHTML = `
-            <div class="header-decoration"></div>
-            <div class="header-content">
-                <div class="header-logo">
-                    <img src="https://kuruntayoga.com.mx/wp-content/uploads/2025/06/icono.png" 
-                         alt="Kurunta Yoga" class="main-logo-img">
-                </div>
-                <div class="header-text">
-                    <h1 class="header-title">Kurunta Yoga</h1>
-                    <p class="header-subtitle">by Ana Sordo - Reserva tu clase</p>
-                    <div class="header-stats">
-                        <div class="stat">
-                            <span class="stat-number" id="totalClasses">0</span>
-                            <span class="stat-label">Clases</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-number" id="availableSpots">0</span>
-                            <span class="stat-label">Cupos</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        const headerElement = document.querySelector('.yoga-main-header');
-        if (headerElement) {
-            headerElement.innerHTML = headerHTML;
-        }
-    }
-
-    function generateTimeFilters() {
-        const filtersHTML = `
-            <button class="filter-btn active" data-filter="all">Todas</button>
-            <button class="filter-btn" data-filter="morning">Mañana</button>
-            <button class="filter-btn" data-filter="afternoon">Tarde</button>
-            <button class="filter-btn" data-filter="evening">Noche</button>
-        `;
-        
-        const filtersElement = document.querySelector('.time-filters');
-        if (filtersElement) {
-            filtersElement.innerHTML = filtersHTML;
-        }
     }
 
     function setCurrentWeek() {
@@ -2100,47 +2091,47 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function generateDayNumbers() {
-        const weekNav = document.querySelector('.week-navigation');
-        if (!weekNav) return;
+        const dayNumbers = document.getElementById("dayNumbers");
+        const dateRange  = document.getElementById("dateRange");
+        
+        if (!dayNumbers || !dateRange) return;
 
+        dayNumbers.innerHTML = "";
+        
         const endOfWeek = new Date(currentWeekStart);
         endOfWeek.setDate(currentWeekStart.getDate() + 6);
         
-        const startStr = currentWeekStart.toLocaleDateString("es-ES", { day: '2-digit', month: 'short' });
-        const endStr = endOfWeek.toLocaleDateString("es-ES", { day: '2-digit', month: 'short', year: 'numeric' });
-        
-        let navHTML = `
-            <button class="nav-btn" id="prevWeek" onclick="changeWeek(-1)">‹</button>
-            <div class="date-info">
-                <div class="date-range">${startStr} - ${endStr}</div>
-                <div class="day-labels">
-                    <span>Dom</span><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span>
-                </div>
-                <div class="day-numbers" id="dayNumbers">
-        `;
+        const startStr = currentWeekStart.toLocaleDateString("es-ES", {
+            day: "2-digit",
+            month: "short"
+        });
+        const endStr = endOfWeek.toLocaleDateString("es-ES", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+        });
+        dateRange.textContent = startStr + " - " + endStr;
 
         for (let i = 0; i < 7; i++) {
             const date = new Date(currentWeekStart);
             date.setDate(currentWeekStart.getDate() + i);
+            date.setHours(0, 0, 0, 0);
             
-            const dayNum = date.getDate();
-            const isToday = isSameDay(date, new Date());
-            const isSelected = isSameDay(date, selectedDate);
+            const dayElement = document.createElement("div");
+            dayElement.className = "day-number";
+            dayElement.textContent = date.getDate().toString().padStart(2, "0");
             
-            let classes = 'day-number';
-            if (isToday) classes += ' today';
-            if (isSelected) classes += ' selected';
+            const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+            dayElement.dataset.date = localDate.toISOString().split("T")[0];
             
-            navHTML += `<div class="${classes}" data-date="${date.toISOString().split('T')[0]}" onclick="selectDate('${date.toISOString().split('T')[0]}')">${dayNum}</div>`;
+            if (isToday(date)) {
+                dayElement.classList.add("today");
+            }
+            if (isSameDay(date, selectedDate)) {
+                dayElement.classList.add("selected");
+            }
+            dayNumbers.appendChild(dayElement);
         }
-        
-        navHTML += `
-                </div>
-            </div>
-            <button class="nav-btn" id="nextWeek" onclick="changeWeek(1)">›</button>
-        `;
-        
-        weekNav.innerHTML = navHTML;
     }
 
     function isToday(date) {
@@ -2156,24 +2147,33 @@ document.addEventListener("DOMContentLoaded", function() {
         const classList = document.getElementById("classList");
         if (!classList) return;
 
-        classList.innerHTML = '<div class="loading-classes">Cargando clases...</div>';
+        const dateString = selectedDate.toISOString().split("T")[0];
+        console.log("📡 Cargando clases reales para:", dateString);
 
-        // Crear nonce para la petición AJAX
-        const nonce = document.querySelector('meta[name="yoga-nonce"]')?.getAttribute('content') || 
-                     window.yoga_public_nonce || 
-                     'fallback_nonce';
+        classList.innerHTML = '<div class="loading-classes"><p>Cargando clases...</p></div>';
 
-        const selectedDateStr = selectedDate.toISOString().split('T')[0];
-        
-        console.log("🔄 Cargando clases para fecha:", selectedDateStr);
-        
-        fetch(ajaxurl || '/wp-admin/admin-ajax.php', {
+        fetch('<?php echo admin_url("admin-ajax.php"); ?>', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams({
                 action: 'get_yoga_classes_public',
+                date: dateString,
+                filter: currentFilter,
+                nonce: '<?php echo wp_create_nonce("yoga_public_nonce"); ?>'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("📊 Respuesta del servidor:", data);
+
+            if (data && data.success && data.data) {
+                const classes = data.data.classes || [];
+                console.log("✅ DATOS VÁLIDOS RECIBIDOS:", classes.length, "clases");
+                displayClasses(classes);
+                console.log("🎯 displayClasses() EJECUTADA");
+            } else {
+                console.log("❌ DATOS INVÁLIDOS:", data);
+                classList.innerHTML = '<div class="no-classes"><p>Error al cargar las clases. Intenta refrescar la página.</p></div>';
             }
         })
         .catch(error => {
