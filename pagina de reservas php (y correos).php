@@ -989,6 +989,7 @@ function yoga_reservas_shortcode() {
     display: block !important;
     opacity: 1 !important;
     visibility: visible !important;
+    transform: scale(1) !important;
 }
 
 /* ASEGURAR QUE LOS BOTONES DEL MODAL FUNCIONEN */
@@ -1468,7 +1469,7 @@ function yoga_reservas_shortcode() {
     padding: 30px 25px;
     border-radius: 16px;
     margin: 25px 0;
-    border: 2px solid rgba(148, 164, 132, 0.25);
+    border: 2px solid rgba(148, 164, 132, 0.2);
     position: relative;
 }
 
@@ -1685,7 +1686,7 @@ function yoga_reservas_shortcode() {
     padding: 25px;
     border-radius: 16px;
     margin: 25px 0;
-    border: 2px solid rgba(148, 164, 132, 0.25);
+    border: 2px solid rgba(148, 164, 132, 0.2);
     backdrop-filter: blur(10px);
 }
 
@@ -1895,7 +1896,8 @@ function yoga_reservas_shortcode() {
     }
 }
 
-/* ========== MODAL DE CANCELACIÓN ========== */
+/* ========== FIN CSS HÍBRIDO ========== */
+		/* ========== MODAL DE CANCELACIÓN ========== */
 #cancelModal {
     display: none !important;
 }
@@ -2013,6 +2015,23 @@ function yoga_reservas_shortcode() {
     </style>
 
 <script>
+	/**
+ * Returns a Date representing the start of the ISO week (Monday) for the given date.
+ * If you want Sunday as first day, change (dow + 6)%7 logic to just dow.
+ *
+ * @param {Date|string|number} d
+ * @returns {Date}
+ */
+function getWeekStart(d) {
+  // normalize to a Date
+  const date = d instanceof Date ? new Date(d) : new Date(d);
+  // ISO week: Monday is day-1, Sunday is day-0 → shift Sunday to 6
+  const dow = date.getDay();
+  const isoDay = (dow + 6) % 7; 
+  date.setHours(0,0,0,0);
+  date.setDate(date.getDate() - isoDay);
+  return date;
+}
 document.addEventListener("DOMContentLoaded", function() {
     // Evitar múltiples inicializaciones
     if (window.yogaBookingPublicInitialized) {
@@ -2021,65 +2040,54 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     window.yogaBookingPublicInitialized = true;
 
-    console.log("🧘‍♀️ Sistema Público Kurunta Yoga v4 - INICIADO");
+    console.log("🧘‍♀️ Sistema Público Kurunta Yoga v3 - INICIADO");
 
-    let currentWeekStart = new Date();
-    let selectedDate = new Date();
+let currentWeekStart = getWeekStart(selectedDate); 
+	let selectedDate = new Date();
     let currentFilter = "all";
+
+    // ========== FUNCIONES AUXILIARES (PRIMERO) ==========
+    function formatTime(timeString) {
+        const time = new Date('2000-01-01 ' + timeString);
+        return time.toLocaleTimeString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
+    }
+
+    function filterClasses(classes) {
+        console.log("🎯 FILTRO EJECUTADO con:", currentFilter);
+        if (currentFilter === "all") return classes;
+        
+        return classes.filter(function(classItem) {
+            const hour = parseInt(classItem.time.split(":")[0]);
+            switch (currentFilter) {
+                case "morning":   return hour >= 6  && hour < 12;
+                case "afternoon": return hour >= 12 && hour < 18;
+                case "evening":   return hour >= 18 && hour <= 23;
+                default:          return true;
+            }
+        });
+    }
+
+    function getStatusClass(classItem) {
+        if (classItem.available_spots <= 0) return "full";
+        if (classItem.available_spots <= 3) return "almost-full";
+        return "available";
+    }
+
+    function getStatusText(classItem) {
+        if (classItem.available_spots <= 0) return "Completo";
+        return classItem.available_spots + "/" + classItem.max_spots + " disponibles";
+    }
 
     // ========== FUNCIONES PRINCIPALES ==========
     function init() {
         setCurrentWeek();
-        generateHeader();
-        generateTimeFilters();
         generateDayNumbers();
         loadClassesFromDB();
         setupEventListeners();
-    }
-
-    function generateHeader() {
-        const headerHTML = `
-            <div class="header-decoration"></div>
-            <div class="header-content">
-                <div class="header-logo">
-                    <img src="https://kuruntayoga.com.mx/wp-content/uploads/2025/06/icono.png" 
-                         alt="Kurunta Yoga" class="main-logo-img">
-                </div>
-                <div class="header-text">
-                    <h1 class="header-title">Kurunta Yoga</h1>
-                    <p class="header-subtitle">by Ana Sordo - Reserva tu clase</p>
-                    <div class="header-stats">
-                        <div class="stat">
-                            <span class="stat-number" id="totalClasses">0</span>
-                            <span class="stat-label">Clases</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-number" id="availableSpots">0</span>
-                            <span class="stat-label">Cupos</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        const headerElement = document.querySelector('.yoga-main-header');
-        if (headerElement) {
-            headerElement.innerHTML = headerHTML;
-        }
-    }
-
-    function generateTimeFilters() {
-        const filtersHTML = `
-            <button class="filter-btn active" data-filter="all">Todas</button>
-            <button class="filter-btn" data-filter="morning">Mañana</button>
-            <button class="filter-btn" data-filter="afternoon">Tarde</button>
-            <button class="filter-btn" data-filter="evening">Noche</button>
-        `;
-        
-        const filtersElement = document.querySelector('.time-filters');
-        if (filtersElement) {
-            filtersElement.innerHTML = filtersHTML;
-        }
     }
 
     function setCurrentWeek() {
@@ -2100,47 +2108,47 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function generateDayNumbers() {
-        const weekNav = document.querySelector('.week-navigation');
-        if (!weekNav) return;
+        const dayNumbers = document.getElementById("dayNumbers");
+        const dateRange  = document.getElementById("dateRange");
+        
+        if (!dayNumbers || !dateRange) return;
 
+        dayNumbers.innerHTML = "";
+        
         const endOfWeek = new Date(currentWeekStart);
         endOfWeek.setDate(currentWeekStart.getDate() + 6);
         
-        const startStr = currentWeekStart.toLocaleDateString("es-ES", { day: '2-digit', month: 'short' });
-        const endStr = endOfWeek.toLocaleDateString("es-ES", { day: '2-digit', month: 'short', year: 'numeric' });
-        
-        let navHTML = `
-            <button class="nav-btn" id="prevWeek" onclick="changeWeek(-1)">‹</button>
-            <div class="date-info">
-                <div class="date-range">${startStr} - ${endStr}</div>
-                <div class="day-labels">
-                    <span>Dom</span><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span>
-                </div>
-                <div class="day-numbers" id="dayNumbers">
-        `;
+        const startStr = currentWeekStart.toLocaleDateString("es-ES", {
+            day: "2-digit",
+            month: "short"
+        });
+        const endStr = endOfWeek.toLocaleDateString("es-ES", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+        });
+        dateRange.textContent = startStr + " - " + endStr;
 
         for (let i = 0; i < 7; i++) {
             const date = new Date(currentWeekStart);
             date.setDate(currentWeekStart.getDate() + i);
+            date.setHours(0, 0, 0, 0);
             
-            const dayNum = date.getDate();
-            const isToday = isSameDay(date, new Date());
-            const isSelected = isSameDay(date, selectedDate);
+            const dayElement = document.createElement("div");
+            dayElement.className = "day-number";
+            dayElement.textContent = date.getDate().toString().padStart(2, "0");
             
-            let classes = 'day-number';
-            if (isToday) classes += ' today';
-            if (isSelected) classes += ' selected';
+            const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+            dayElement.dataset.date = localDate.toISOString().split("T")[0];
             
-            navHTML += `<div class="${classes}" data-date="${date.toISOString().split('T')[0]}" onclick="selectDate('${date.toISOString().split('T')[0]}')">${dayNum}</div>`;
+            if (isToday(date)) {
+                dayElement.classList.add("today");
+            }
+            if (isSameDay(date, selectedDate)) {
+                dayElement.classList.add("selected");
+            }
+            dayNumbers.appendChild(dayElement);
         }
-        
-        navHTML += `
-                </div>
-            </div>
-            <button class="nav-btn" id="nextWeek" onclick="changeWeek(1)">›</button>
-        `;
-        
-        weekNav.innerHTML = navHTML;
     }
 
     function isToday(date) {
@@ -2153,34 +2161,43 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function loadClassesFromDB() {
-        const classList = document.getElementById("classList");
-        if (!classList) return;
+    const classList = document.getElementById("classList");
+    if (!classList) return;
 
-        classList.innerHTML = '<div class="loading-classes">Cargando clases...</div>';
+    const dateString = selectedDate.toISOString().split("T")[0];
+    console.log("📡 Cargando clases reales para:", dateString);
 
-        // Crear nonce para la petición AJAX
-        const nonce = document.querySelector('meta[name="yoga-nonce"]')?.getAttribute('content') || 
-                     window.yoga_public_nonce || 
-                     'fallback_nonce';
+    classList.innerHTML = '<div class="loading-classes"><p>Cargando clases...</p></div>';
 
-        const selectedDateStr = selectedDate.toISOString().split('T')[0];
-        
-        console.log("🔄 Cargando clases para fecha:", selectedDateStr);
-        
-        fetch(ajaxurl || '/wp-admin/admin-ajax.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams({
-                action: 'get_yoga_classes_public',
-            }
+    fetch('<?php echo admin_url("admin-ajax.php"); ?>', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+            action: 'get_yoga_classes_public',
+            date: dateString,
+            filter: currentFilter,
+            nonce: '<?php echo wp_create_nonce("yoga_public_nonce"); ?>'
         })
-        .catch(error => {
-            console.error("❌ Error AJAX:", error);
-            classList.innerHTML = '<div class="error-classes"><p>Error de conexión. Intenta recargar la página.</p></div>';
-        });
-    }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("📊 Respuesta del servidor:", data);
+
+        if (data && data.success && data.data) {
+            const classes = data.data.classes || [];
+            console.log("✅ DATOS VÁLIDOS RECIBIDOS:", classes.length, "clases");
+            displayClasses(classes);
+            console.log("🎯 displayClasses() EJECUTADA");
+        } else {
+            console.log("❌ DATOS INVÁLIDOS:", data);
+            classList.innerHTML = '<div class="no-classes"><p>Error al cargar las clases. Intenta refrescar la página.</p></div>';
+        }
+    })
+    .catch(error => {
+        console.error("❌ Error AJAX:", error);
+        classList.innerHTML = '<div class="error-classes"><p>Error de conexión. Intenta recargar la página.</p></div>';
+    });
+}
 
     function displayClasses(classes) {
         const classList = document.getElementById("classList");
@@ -3039,349 +3056,6 @@ function yoga_cancel_reservation_ajax() {
 // add_action('wp_ajax_yoga_cancel_reservation', 'yoga_cancel_reservation_ajax');
 // add_action('wp_ajax_nopriv_yoga_cancel_reservation', 'yoga_cancel_reservation_ajax');
 
-// ========== FUNCIÓN PARA ENVIAR EMAIL DE CANCELACIÓN ==========
-function send_cancellation_confirmation_email($reservation_data, $class_data) {
-    add_filter('wp_mail_content_type', function() { return 'text/html'; });
-    
-    $to = $reservation_data->user_email;
-    $subject = 'Cancelación Confirmada - Kurunta Yoga';
-    
-    // FECHA EN ESPAÑOL
-    $date = new DateTime($class_data->date);
-    $days = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
-    $months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 
-               'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-    
-    $day_name = $days[$date->format('w')];
-    $day_number = $date->format('d');
-    $month_name = $months[$date->format('n') - 1];
-    $year = $date->format('Y');
-    
-    $date_formatted = ucfirst($day_name) . ', ' . $day_number . ' de ' . $month_name . ' de ' . $year;
-    $time_formatted = date('H:i', strtotime($class_data->time));
-    
-    $message = "
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset='UTF-8'>
-        <style>
-            body { 
-                font-family: 'Montserrat', Arial, sans-serif; 
-                margin: 0; padding: 0; 
-                background-color: #f4f3f1; 
-                line-height: 1.6;
-            }
-            .container { 
-                max-width: 600px; margin: 0 auto; 
-                background: white; border-radius: 8px;
-                overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            }
-            .header { 
-                background: linear-gradient(135deg, #8c162a 0%, #a91d35 100%);
-                color: white; padding: 40px 30px; text-align: center;
-            }
-            .logo { 
-                width: 120px; height: auto; 
-                margin: 0 auto 20px auto; border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            }
-            .content { padding: 40px 30px; }
-            .sad-icon { 
-                font-size: 4rem; text-align: center; 
-                margin: 20px 0; color: #8c162a;
-            }
-            .details { 
-                background: #fff5f5; padding: 25px; 
-                border-radius: 8px; margin: 25px 0;
-                border-left: 4px solid #8c162a;
-            }
-            .footer { 
-                background: #2c2c2c; color: white; 
-                padding: 30px; text-align: center; 
-            }
-            .footer h4 { margin: 0 0 15px 0; color: #94a484; }
-            .contact-info { margin: 15px 0; line-height: 1.8; }
-            .contact-info a { color: #94a484; text-decoration: none; }
-        </style>
-    </head>
-    <body>
-        <div class='container'>
-            <div class='header'>
-                <img src='https://kuruntayoga.com.mx/wp-content/uploads/2025/06/icono.png' alt='Kurunta Yoga' class='logo'>
-                <h1>Kurunta Yoga</h1>
-                <p>by Ana Sordo</p>
-            </div>
-            
-            <div class='content'>
-                <div class='sad-icon'>😔</div>
-                
-                <h2 style='color: #8c162a; text-align: center;'>Cancelación Confirmada</h2>
-                
-                <p>Hola <strong>{$reservation_data->user_name}</strong>,</p>
-                
-                <p>Lamentamos que hayas tenido que cancelar tu reserva. Tu cancelación ha sido procesada exitosamente.</p>
-                
-                <div class='details'>
-                    <h3>Clase cancelada:</h3>
-                    <p><strong>Clase:</strong> {$class_data->name}</p>
-                    <p><strong>Instructor:</strong> {$class_data->instructor}</p>
-                    <p><strong>Fecha:</strong> {$date_formatted}</p>
-                    <p><strong>Hora:</strong> {$time_formatted}</p>
-                </div>
-                
-                <div style='text-align: center; margin: 30px 0; padding: 20px; background: #f8f9fa; border-radius: 8px;'>
-                    <h3 style='color: #94a484; margin-bottom: 15px;'>¡Te esperamos pronto!</h3>
-                    <p>Esperamos verte en una próxima clase. Recuerda que siempre tienes un lugar en nuestra comunidad de yoga.</p>
-                    <p><em>Con cariño, el equipo de Kurunta Yoga</em></p>
-                </div>
-            </div>
-            
-            <div class='footer'>
-                <h4>Kurunta Yoga by Ana Sordo</h4>
-                <div class='contact-info'>
-                    <p><strong>Contacto:</strong></p>
-                    <p>Ana Sordo</p>
-                    <p><a href='mailto:anasordo@kuruntayoga.com.mx'>anasordo@kuruntayoga.com.mx</a></p>
-                    <p><a href='http://kuruntayoga.com.mx'>kuruntayoga.com.mx</a></p>
-                    <p>Tel: 5531245645</p>
-                </div>
-            </div>
-        </div>
-    </body>
-    </html>";
-
-    $from_email = 'anasordo@kuruntayoga.com.mx';
-    $from_name = 'Ana Sordo - Kurunta Yoga';
-    
-    $headers = array(
-        'From: ' . $from_name . ' <' . $from_email . '>',
-        'Reply-To: ' . $from_email,
-        'Content-Type: text/html; charset=UTF-8'
-    );
-    
-    $result = wp_mail($to, $subject, $message, $headers);
-    
-    remove_filter('wp_mail_content_type', function() { return 'text/html'; });
-    
-    return $result;
-}
-
-// Función de email ACTUALIZADA
-function send_reservation_confirmation_email($reservation_data, $class_data) {
-    add_filter('wp_mail_content_type', function() { return 'text/html'; });
-    
-    $to = $reservation_data['user_email'];
-    $subject = 'Reserva Confirmada - Kurunta Yoga';
-    
-    // FECHA EN ESPAÑOL
-    $date = new DateTime($class_data->date);
-    $days = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
-    $months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 
-               'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-    
-    $day_name = $days[$date->format('w')];
-    $day_number = $date->format('d');
-    $month_name = $months[$date->format('n') - 1];
-    $year = $date->format('Y');
-    
-    $date_formatted = ucfirst($day_name) . ', ' . $day_number . ' de ' . $month_name . ' de ' . $year;
-    $time_formatted = date('H:i', strtotime($class_data->time));
-    
-    $message = "
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset='UTF-8'>
-        <style>
-            body { 
-                font-family: 'Montserrat', Arial, sans-serif; 
-                margin: 0; 
-                padding: 0; 
-                background-color: #f4f3f1; 
-                line-height: 1.6;
-            }
-            .container { 
-                max-width: 600px; 
-                margin: 0 auto; 
-                background: white; 
-                border-radius: 8px;
-                overflow: hidden;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            }
-            .header { 
-                background: linear-gradient(135deg, #94a484 0%, #95a485 100%);
-                color: white; 
-                padding: 40px 30px; 
-                text-align: center; 
-                position: relative;
-            }
-            .logo { 
-                width: 120px; 
-                height: auto; 
-                margin: 0 auto 20px auto;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            }
-            .header h1 {
-                margin: 15px 0 8px 0; 
-                font-size: 1.8rem;
-                font-weight: 500;
-                color: #f3f2f0;
-                letter-spacing: 1px;
-                text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-            }
-            .header p {
-                margin: 0; 
-                opacity: 0.9;
-                font-size: 0.95rem;
-                font-weight: 300;
-                letter-spacing: 0.5px;
-                color: rgba(243, 242, 240, 0.95);
-            }
-            .content { 
-                padding: 40px 30px; 
-            }
-            .greeting {
-                color: #94a484;
-                font-size: 1.3rem;
-                margin-bottom: 20px;
-                font-weight: 500;
-            }
-            .details { 
-                background: #f4f3f1; 
-                padding: 25px; 
-                border-radius: 8px; 
-                margin: 25px 0;
-                border-left: 4px solid #94a484;
-            }
-            .details h3 {
-                margin-top: 0; 
-                color: #2c2c2c;
-                font-size: 1.1rem;
-                margin-bottom: 15px;
-            }
-            .details p {
-                margin: 8px 0;
-                color: #2c2c2c;
-            }
-            .important {
-                background: #fff9e6;
-                padding: 20px;
-                border-radius: 8px;
-                margin: 20px 0;
-                border-left: 4px solid #ffc107;
-            }
-            .important h4 {
-                margin-top: 0;
-                color: #856404;
-            }
-            .important ul {
-                margin: 10px 0;
-                padding-left: 20px;
-            }
-            .important li {
-                margin: 5px 0;
-                color: #856404;
-            }
-            .closing {
-                text-align: center;
-                margin: 30px 0;
-                padding: 20px;
-                background: #f8f9fa;
-                border-radius: 8px;
-            }
-            .footer { 
-                background: #2c2c2c; 
-                color: white; 
-                padding: 30px; 
-                text-align: center; 
-            }
-            .footer h4 {
-                margin: 0 0 15px 0;
-                color: #94a484;
-            }
-            .contact-info {
-                margin: 15px 0;
-                line-height: 1.8;
-            }
-            .contact-info a {
-                color: #94a484;
-                text-decoration: none;
-            }
-        </style>
-    </head>
-    <body>
-        <div class='container'>
-            <div class='header'>
-                <img src='https://kuruntayoga.com.mx/wp-content/uploads/2025/06/icono.png' alt='Kurunta Yoga' class='logo'>
-                <h1>Kurunta Yoga</h1>
-                <p>by Ana Sordo</p>
-            </div>
-            
-            <div class='content'>
-                <div class='greeting'>Hola {$reservation_data['user_name']},</div>
-                
-                <p>Tu reserva ha sido <strong>confirmada exitosamente</strong>. Te esperamos en la clase.</p>
-                
-                <div class='details'>
-                    <h3>Detalles de tu clase:</h3>
-                    <p><strong>Clase:</strong> {$class_data->name}</p>
-                    <p><strong>Instructor:</strong> {$class_data->instructor}</p>
-                    <p><strong>Fecha:</strong> {$date_formatted}</p>
-                    <p><strong>Hora:</strong> {$time_formatted}</p>
-                    <p><strong>Duración:</strong> {$class_data->duration} minutos</p>
-                </div>
-                
-                <div class='important'>
-                    <h4>Importante - Qué traer:</h4>
-                    <ul>
-                        <li>Llega 10 minutos antes de la clase</li>
-                        <li>Trae tu mat y toalla</li>
-                        <li>Mantente hidratado</li>
-                        <li>Usa ropa cómoda para moverte</li>
-                    </ul>
-                </div>
-                
-                <div class='closing'>
-                    <p><strong>Nos vemos en la clase.</strong></p>
-                    <p><em>Namaste</em></p>
-                </div>
-            </div>
-            
-            <div class='footer'>
-                <h4>Kurunta Yoga by Ana Sordo</h4>
-                
-                <div class='contact-info'>
-                    <p><strong>Contacto:</strong></p>
-                    <p>Ana Sordo</p>
-                    <p><a href='mailto:anasordo@kuruntayoga.com.mx'>anasordo@kuruntayoga.com.mx</a></p>
-                    <p><a href='http://kuruntayoga.com.mx'>kuruntayoga.com.mx</a></p>
-                    <p>Tel: 5531245645</p>
-                </div>
-            </div>
-        </div>
-    </body>
-    </html>";
-        
-    // CONFIGURACIÓN DE EMAIL ACTUALIZADA
-    $from_email = 'anasordo@kuruntayoga.com.mx';
-    $from_name = 'Ana Sordo - Kurunta Yoga';
-    
-    error_log('YOGA EMAIL: Enviando desde ' . $from_email . ' (' . $from_name . ') a ' . $to);
-
-    $headers = array(
-        'From: ' . $from_name . ' <' . $from_email . '>',
-        'Reply-To: ' . $from_email,
-        'Content-Type: text/html; charset=UTF-8'
-    );
-    
-    $result = wp_mail($to, $subject, $message, $headers);
-    
-    remove_filter('wp_mail_content_type', function() { return 'text/html'; });
-    
-    return $result;
-}
 
 // ========== FUNCIONES ADICIONALES DE UTILIDAD ==========
 
