@@ -803,10 +803,8 @@ function yoga_render_admin_interface() {
             grid-column: 3 / 4 !important;
             grid-row: 2 !important;
         }
-    }
 
-    /* ESTILOS GENERALES FUERA DE MEDIA QUERIES */
-    .filter-btn {
+        .filter-btn {
     padding: 12px 6px !important;
     font-size: 12px !important;
     font-weight: 600 !important;
@@ -874,120 +872,124 @@ function yoga_render_admin_interface() {
     color: #999 !important;
     pointer-events: none !important;
 }
+        .search-group input:focus {
+            border-color: #8fbc8f !important;
+            box-shadow: 0 0 0 3px rgba(143, 188, 143, 0.2) !important;
+        }
 
-.search-group input:focus {
-    border-color: #8fbc8f !important;
-    box-shadow: 0 0 0 3px rgba(143, 188, 143, 0.2) !important;
-}
-
-.search-group .dashicons {
-    position: absolute !important;
-    right: 15px !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    font-size: 18px !important;
-    color: #999 !important;
-    pointer-events: none !important;
-}
-
-/* GRID DE CLASES CENTRADO */
-.classes-grid {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 15px !important;
-    width: 100% !important;
-    max-width: 360px !important;
-    margin: 0 auto !important;
-    padding: 0 !important;
-    align-items: center !important;
-}
-
-/* CUADROS PERFECTAMENTE CENTRADOS */
-.class-card {
-    width: 100% !important;
-    max-width: 340px !important;
-    margin: 0 auto !important;
-    padding: 15px !important;
-    border-radius: 12px !important;
-    background: white !important;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.1) !important;
-    border: 1px solid #e2e8f0 !important;
-    position: relative !important;
-    overflow: hidden !important;
-    box-sizing: border-box !important;
-    display: block !important;
-}
-/* Header del cuadro */
-.class-card-header {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: flex-start !important;
-    margin-bottom: 12px !important;
-    padding-bottom: 8px !important;
-    border-bottom: 1px solid #f1f5f9 !important;
-}
-
-.class-card-header h3 {
-    font-size: 17px !important;
-    margin: 0 !important;
-    flex: 1 !important;
-    line-height: 1.3 !important;
-    color: #2d3748 !important;
-    font-weight: 600 !important;
-    padding-right: 10px !important;
-    text-align: left !important;
-}
-/* Botones de acción centrados */
-.class-actions {
-    display: flex !important;
-    gap: 6px !important;
-    flex-shrink: 0 !important;
-    justify-content: center !important;
-}
-
-.action-icon {
-    width: 34px !important;
-    height: 34px !important;
-    padding: 8px !important;
-    border-radius: 8px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    border: 1px solid #e2e8f0 !important;
-    background: #f8fafc !important;
-    transition: all 0.2s ease !important;
-}
-.action-icon:hover {
-    background: #e2e8f0 !important;
-    transform: scale(1.05) !important;
-}
-
-.action-icon.edit-class {
-    color: #3182ce !important;
-}
-
-.action-icon.duplicate-class {
-    color: #38a169 !important;
-}
-
-.action-icon.delete-class {
-    color: #e53e3e !important;
-}
-
-.action-icon .dashicons {
-    font-size: 16px !important;
-}
-
-/* Solo hover en desktop, NO en móvil para filtros */
-@media (min-width: 769px) {
-    .filter-btn:hover {
-        background: #f8fafc !important;
-        border-color: #8fbc8f !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.15) !important;
+        .search-group .dashicons {
+            position: absolute !important;
+            right: 15px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            font-size: 18px !important;
+            color: #999 !important;
+            pointer-events: none !important;
+        }
+        
+        /* GRID DE CLASES CENTRADO */
+        .classes-grid {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 15px !important;
+            width: 100% !important;
+            max-width: 360px !important;
+            margin: 0 auto !important;
+            padding: 0 !important;
+            align-items: center !important;
+        }
+        
+        /* CUADROS PERFECTAMENTE CENTRADOS */
+        .class-card {
+            width: 100% !important;
+            max-width: 340px !important;
+            margin: 0 auto !important;
+            padding: 15px !important;
+            border-radius: 12px !important;
+            background: white !important;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.1) !important;
+            border: 1px solid #e2e8f0 !important;
+            position: relative !important;
+            overflow: hidden !important;
+            box-sizing: border-box !important;
+            display: block !important;
+        }
+        
+        /* Header del cuadro */
+        .class-card-header {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: flex-start !important;
+            margin-bottom: 12px !important;
+            padding-bottom: 8px !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+        }
+        
+        .class-card-header h3 {
+            font-size: 17px !important;
+            margin: 0 !important;
+            flex: 1 !important;
+            line-height: 1.3 !important;
+            color: #2d3748 !important;
+            font-weight: 600 !important;
+            padding-right: 10px !important;
+            text-align: left !important;
+        }
+        
+        /* Botones de acción centrados */
+        .class-actions {
+            display: flex !important;
+            gap: 6px !important;
+            flex-shrink: 0 !important;
+            justify-content: center !important;
+        }
+        
+        .action-icon {
+            width: 34px !important;
+            height: 34px !important;
+            padding: 8px !important;
+            border-radius: 8px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border: 1px solid #e2e8f0 !important;
+            background: #f8fafc !important;
+            transition: all 0.2s ease !important;
+        }
+        
+        .action-icon:hover {
+            background: #e2e8f0 !important;
+            transform: scale(1.05) !important;
+        }
+        
+        .action-icon.edit-class {
+            color: #3182ce !important;
+        }
+        
+        .action-icon.duplicate-class {
+            color: #38a169 !important;
+        }
+        
+        .action-icon.delete-class {
+            color: #e53e3e !important;
+        }
+        
+        .action-icon .dashicons {
+            font-size: 16px !important;
+        }
     }
-}
-</style>
+    
+    /* Solo hover en desktop, NO en móvil para filtros */
+    @media (min-width: 769px) {
+        .filter-btn:hover {
+            background: #f8fafc !important;
+            border-color: #8fbc8f !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15) !important;
+        }
+    }
+    }
+    </style>
     <?php
 }
 
@@ -4893,7 +4895,8 @@ function handle_make_yoga_reservation_public() {
         ];
         
 $email_sent = send_reservation_confirmation_email($reservation_data, $class);
-		wp_send_json_success([
+		
+        wp_send_json_success([
             'message' => 'Reserva confirmada exitosamente',
             'reservation_id' => $wpdb->insert_id,
             'email_sent' => $email_sent
@@ -4903,9 +4906,8 @@ $email_sent = send_reservation_confirmation_email($reservation_data, $class);
     }
 }
 
-
-// Función de email de confirmación de reservas
-function send_reservation_confirmation_email($reservation_data, $class_data) {
+// Función de email de confirmación para la página pública
+function send_reservation_confirmation_email_public($reservation_data, $class_data) {
     add_filter('wp_mail_content_type', function() { return 'text/html'; });
     
     $to = $reservation_data['user_email'];
@@ -4987,7 +4989,7 @@ function send_reservation_confirmation_email($reservation_data, $class_data) {
             </div>
             
             <div class='content'>
-                <div class='greeting'>Hola {$reservation_data['user_name']},</div>
+                <h2>Hola {$reservation_data['user_name']},</h2>
                 
                 <p>Tu reserva ha sido <strong>confirmada exitosamente</strong>. Te esperamos en la clase.</p>
                 
@@ -5000,119 +5002,36 @@ function send_reservation_confirmation_email($reservation_data, $class_data) {
                     <p><strong>Duración:</strong> {$class_data->duration} minutos</p>
                 </div>
                 
-                <div style='background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;'>
-                    <p style='margin: 0; color: #2d5a2d; font-weight: 600;'>
-                        📍 <strong>Recuerda llegar 10 minutos antes</strong> 📍
-                    </p>
-                </div>
-                
                 <p><strong>Nos vemos en la clase.</strong></p>
-                <p><em>Namaste</em> 🙏</p>
+                <p><em>Namaste</em></p>
             </div>
             
             <div class='footer'>
                 <h4>Kurunta Yoga by Ana Sordo</h4>
-                <p><a href='mailto:anasordo@kuruntayoga.com.mx' style='color: #94a484;'>anasordo@kuruntayoga.com.mx</a></p>
-                <p><a href='http://kuruntayoga.com.mx' style='color: #94a484;'>kuruntayoga.com.mx</a></p>
+                <p>anasordo@kuruntayoga.com.mx</p>
+                <p>kuruntayoga.com.mx</p>
                 <p>Tel: 5531245645</p>
             </div>
         </div>
     </body>
     </html>";
-
+        
+    // Configuración de email
     $from_email = get_option('yoga_email_from', 'anasordo@kuruntayoga.com.mx');
     $from_name = get_option('yoga_email_from_name', 'Ana Sordo - Kurunta Yoga');
     
+    error_log('YOGA EMAIL: Enviando desde ' . $from_email . ' (' . $from_name . ') a ' . $to);
+
     $headers = array(
         'From: ' . $from_name . ' <' . $from_email . '>',
         'Reply-To: ' . $from_email,
         'Content-Type: text/html; charset=UTF-8'
     );
     
-    // Log para debugging
-    error_log('YOGA EMAIL CONFIRMACIÓN: Enviando desde ' . $from_email . ' a ' . $to);
-    
     $result = wp_mail($to, $subject, $message, $headers);
-    
-    if ($result) {
-        error_log('YOGA EMAIL CONFIRMACIÓN: ✅ Enviado exitosamente');
-    } else {
-        error_log('YOGA EMAIL CONFIRMACIÓN: ❌ Error al enviar');
-    }
     
     remove_filter('wp_mail_content_type', function() { return 'text/html'; });
     
     return $result;
 }
 
-// ========== FUNCIÓN PARA ENVIAR EMAIL DE CANCELACIÓN ==========
-function send_cancellation_confirmation_email( $reservation_data, $class_data ) {
-    // Forzar HTML
-    add_filter( 'wp_mail_content_type', function() { return 'text/html; charset=UTF-8'; } );
-
-    $to      = $reservation_data->user_email;
-    $subject = 'Cancelación Confirmada - Kurunta Yoga';
-
-    // Fecha en español
-    $date      = new DateTime( $class_data->date );
-    $days      = [ 'domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado' ];
-    $months    = [ 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-                   'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre' ];
-    $day_name  = ucfirst( $days[ $date->format('w') ] );
-    $day_num   = $date->format('d');
-    $month     = $months[ $date->format('n') - 1 ];
-    $year      = $date->format('Y');
-    $date_f    = "{$day_name}, {$day_num} de {$month} de {$year}";
-    $time_f    = date( 'H:i', strtotime( $class_data->time ) );
-
-    // Construcción del mensaje HTML
-    $message = "
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset='UTF-8'>
-      <style>
-        body { font-family: 'Montserrat', Arial, sans-serif; background-color: #f4f3f1; margin: 0; padding: 0; }
-        .container { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 8px; overflow: hidden; }
-        .header { background: linear-gradient(135deg,#8c162a 0%,#a91d35 100%); color: #fff; padding: 30px; text-align: center; }
-        .content { padding: 30px; color: #333; }
-        .footer { background: #f4f3f1; text-align: center; padding: 20px; font-size: 12px; color: #777; }
-      </style>
-    </head>
-    <body>
-      <div class='container'>
-        <div class='header'>
-          <h1>Cancelación Confirmada</h1>
-        </div>
-        <div class='content'>
-          <p>Hola <strong>{$reservation_data->user_name}</strong>,</p>
-          <p>Tu reserva para la clase <strong>{$class_data->name}</strong> ha sido cancelada con éxito.</p>
-          <p><strong>Fecha:</strong> {$date_f}<br>
-             <strong>Hora:</strong> {$time_f}</p>
-          <p>Si necesitas más información o quieres reservar de nuevo, no dudes en contactarnos.</p>
-          <p>¡Te esperamos pronto!</p>
-        </div>
-        <div class='footer'>
-          <p>© "Kurunta Yoga" | <a href='https://tudominio.com' target='_blank'>tudominio.com</a></p>
-        </div>
-      </div>
-    </body>
-    </html>
-    ";
-
-    // Encabezados
-    $headers = [
-      'Content-Type: text/html; charset=UTF-8',
-      'From: Kurunta Yoga <no-reply@tudominio.com>'
-    ];
-
-    // Envío
-    $sent = wp_mail( $to, $subject, $message, $headers );
-
-    // Remover filtro para no afectar otros correos
-    remove_all_filters( 'wp_mail_content_type' );
-
-    if ( ! $sent ) {
-        error_log( "YOGA: fallo al enviar email de cancelación a {$to}" );
-    }
-}
